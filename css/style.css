@@ -1,0 +1,185 @@
+
+:root{
+	--checkList-height: 			80vh;
+}
+html{
+	/* background-color: 				black; */
+}
+*{
+	font-family: 					Verdana, Geneva, Tahoma, sans-serif;
+}
+body{
+    background-color:   			rgba(97, 97, 97, 0);
+}
+.overlay {
+    top:                			0;
+    left:               			0;
+    width:              			100%;
+    height:             			100%;
+    z-index:            			1000;
+    display:            			flex;
+    position:           			fixed;
+    align-items:        			center;
+    justify-content:    			center;
+    background-color:   			rgba(0, 0, 0, 0.0) !important;
+}
+.checklist-container {
+	width:							35vw;
+	height: 						var(--checkList-height);
+	padding: 						25px;
+    box-shadow:						0px 4px 10px rgba(0, 0, 0, 0.3);
+    border-radius:					10px;
+    background-color:				rgba(90, 90, 90, 0.048) ;
+}
+#tab {
+    right:               			-35vw;
+    z-index:             			10001;
+    position:            			absolute;
+    transition:          			transform 0.5s ease-in-out;
+	background-color: 				rgba(0, 0, 0, 0.8);
+	border: 						1px solid rgb(255,255,255)
+}
+.slide {
+    transform:           			translateX(calc(-35vw));
+}
+.pre-slide {
+    transform:           			translateX(calc(0.04 * -35vw));
+}
+p{
+	width: 							100%;
+	color: 							darkgrey;
+	margin: 						0px;
+}
+ul#page{
+    padding:             			0;
+    display:             			flex;
+    min-height:          			calc(var(--checkList-height)*0.8);
+    list-style:          			none;
+    align-items:         			center;
+    flex-direction:      			column;
+}
+li[id^=item-]{
+	width: 							100%;
+	height: 						calc(var(--checkList-height)*0.05);
+	display: 						flex;
+	position: 						relative;
+	font-size: 						medium;
+	text-align: 					left;
+	align-items: 					center;
+	font-weight: 					bold;
+	border-bottom: 					1px solid #616161;
+	justify-content: 				space-between;
+
+	overflow: 						visible;
+    transition: 					background-color 0.3s ease;
+}
+li::after {
+    top: 							50%;
+	left: 							-5%;
+    width: 							0;
+    height: 						4px;
+    content: 						'';
+    z-index: 						1;
+    position: 						absolute;
+    background: 					rgb(146, 0, 0);
+    transition: 					width 0.2s ease;
+    pointer-events: 				none;
+}
+li.slashed::after {
+    width: 							110%;
+}
+li.slashed {
+	opacity: 						0.5;
+    background-color: 				#616161;
+}
+input[type="checkbox"] {
+	left: 							0px;
+}
+h2 {
+	display: 						flex;
+    text-align: 					center;
+    margin-bottom: 					10px;
+	justify-content: 				space-around;
+}
+#btnGrp{
+	height: 						100%;
+	display: 						flex;
+	max-width: 						100%;
+	min-width: 						auto;
+	justify-content: 				flex-end;
+}
+[id^="inp-"]{
+	width: 							100% !important;
+	height: 						20px;
+	margin: 						0px 10px;
+}
+button[id^="donEdit-"] {
+    color: 							black;
+	width: 							30px;
+    border: 						none;
+    cursor: 						pointer;
+	padding: 						5px 10px;
+	text-wrap: 						nowrap;
+	font-size: 						large;
+	text-align: 					center;
+	align-items: 					center;
+	font-weight: 					bold;
+	justify-content: 				center;
+}
+button[id^="done-"] {
+    color: 							black;
+    cursor: 						pointer;
+	height: 						100%;
+	text-wrap: 						nowrap;
+	font-size: 						medium;
+	text-align: 					center;
+	align-items: 					center;
+	font-weight: 					bold;
+	justify-content: 				center;
+    background-color: 				rgb(76, 216, 21);
+	border-top-left-radius: 		5px;
+	border-bottom-left-radius: 		5px;
+}
+button[id^="del-"] {
+    color: 							black;
+	width: 							40px;
+	height: 						100%;
+    border: 						none;
+    cursor: 						pointer;
+	font-size: 						large;
+	text-align: 					center;
+	align-items: 					center;
+	font-weight: 					bold;
+	justify-self: 					flex-end;
+    background-color: 				rgb(189, 22, 22);
+}
+button[id^="edit-"] {
+    color: 							black;
+	width: 							50px;
+    border: 						none;
+	height: 						100%;
+    cursor: 						pointer;
+	font-size: 						large;
+	text-align: 					center;
+	align-items: 					center;
+	font-weight: 					bold;
+	justify-self: 					flex-end;
+    background-color: 				rgb(207, 187, 2);
+    border-top-left-radius: 		3px;
+    border-bottom-left-radius:		3px;
+}
+#add-button{
+	color: 							black;
+	font-weight: 					bold;
+	border-radius: 					0px;
+	border-top-left-radius: 		3px;
+    border-bottom-left-radius:		3px;
+}
+#save-button{
+	border-radius: 					0px;
+	border-top-right-radius: 		3px;
+    border-bottom-right-radius:		3px;
+}
+[id^=""]{
+	visibility: 					hidden;
+}

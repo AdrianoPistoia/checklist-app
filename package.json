@@ -1,0 +1,42 @@
+{
+  "name": "checklist-app",
+  "version": "1.0.2",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.checklist.overlay",
+    "productName": "Checklist",
+    "files": [
+      "main.js",
+      "node_modules/bootstrap/dist/css/bootstrap.css",
+      "css/style.css",
+      "js/app.js",
+      "js/util.js",
+      "index.html",
+      "preload.js"
+    ],
+    "directories": {
+      "buildResources": "build"
+    },
+    "win": {
+      "target": "portable",
+      "icon": "build/checklist.ico",
+      "artifactName": "${productName}.exe"
+    }
+  },
+  "keywords": [],
+  "author": "CapybaraLevel5",
+  "license": "ISC",
+  "description": "Version: ${version}",
+  "devDependencies": {
+    "electron": "^33.0.2",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.3"
+  }
+}
