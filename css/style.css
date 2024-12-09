@@ -2,9 +2,6 @@
 :root{
 	--checkList-height: 			80vh;
 }
-html{
-	/* background-color: 				black; */
-}
 *{
 	font-family: 					Verdana, Geneva, Tahoma, sans-serif;
 }
