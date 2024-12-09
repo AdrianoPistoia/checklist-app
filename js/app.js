@@ -118,7 +118,7 @@ window.onload = function () {
 
         // Add delete functionality
         delBtn.addEventListener("click", () => {
-            if(isSlashed) return;
+            if(isSlashed || lItem.classList.contains("slashed")) return;
             lItem.remove();
         });
 
@@ -146,7 +146,7 @@ window.onload = function () {
 
         // Add edit functionality after the task is saved
         editBtn.addEventListener("click", () => {
-            if(isSlashed) return;
+            if(isSlashed || lItem.classList.contains("slashed")) return;
             textInput.value = title.textContent; // Set current text to input
             textInput.style.display = "inline-block"; // Show input field
             title.style.display = "none"; // Hide task title
@@ -164,6 +164,7 @@ window.onload = function () {
                 btnGrp.style.display = "flex"; // Show button group again
             });
         });
+        textInput.focus();
     }
 
     /**
