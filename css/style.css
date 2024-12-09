@@ -61,14 +61,19 @@ li[id^=item-]{
 	display: 						flex;
 	position: 						relative;
 	font-size: 						medium;
+	margin-top: 					2px;
 	text-align: 					left;
 	align-items: 					center;
 	font-weight: 					bold;
+	margin-bottom: 					2px;
 	border-bottom: 					1px solid #616161;
 	justify-content: 				space-between;
 
 	overflow: 						visible;
     transition: 					background-color 0.3s ease;
+}
+li[id^="item-"]:hover{
+	background-color: 				#313131;
 }
 li::after {
     top: 							50%;
@@ -123,6 +128,7 @@ button[id^="donEdit-"] {
 	font-weight: 					bold;
 	justify-content: 				center;
 }
+
 button[id^="done-"] {
     color: 							black;
     cursor: 						pointer;
@@ -133,9 +139,9 @@ button[id^="done-"] {
 	align-items: 					center;
 	font-weight: 					bold;
 	justify-content: 				center;
-    background-color: 				rgb(76, 216, 21);
-	border-top-left-radius: 		5px;
-	border-bottom-left-radius: 		5px;
+    background-color: 				rgb(49, 173, 0);
+	border-top-left-radius: 		3px;
+	/* border-bottom-left-radius: 		5px; */
 }
 button[id^="del-"] {
     color: 							black;
@@ -148,7 +154,14 @@ button[id^="del-"] {
 	align-items: 					center;
 	font-weight: 					bold;
 	justify-self: 					flex-end;
+	justify-content: 				center;
     background-color: 				rgb(189, 22, 22);
+	border-top-right-radius: 		3px;
+	/* border-bottom-right-radius: 	5px; */
+}
+button[id^="del-"]:hover{
+	background-color: 				rgb(155, 0, 0);
+
 }
 button[id^="edit-"] {
     color: 							black;
@@ -163,7 +176,10 @@ button[id^="edit-"] {
 	justify-self: 					flex-end;
     background-color: 				rgb(207, 187, 2);
     border-top-left-radius: 		3px;
-    border-bottom-left-radius:		3px;
+}
+button[id^="edit-"]:hover{
+    background-color: 				rgb(133, 119, 1);
+
 }
 #add-button{
 	color: 							black;
@@ -179,4 +195,17 @@ button[id^="edit-"] {
 }
 [id^=""]{
 	visibility: 					hidden;
+}
+
+@keyframes shake {
+    0% 		{ transform: translateX(0) 		skewX(0);		}
+    20% 	{ transform: translateX(-5px) 	skewX(5deg) 	}
+    40% 	{ transform: translateX(5px) 	skewX(-5deg);	}
+    60% 	{ transform: translateX(-5px) 	skewX(5deg); 	}
+    80% 	{ transform: translateX(5px) 	skewX(-5deg);	}
+    100% 	{ transform: translateX(-5px) 	skewX(5deg); 	}
+}
+
+.shake {
+    animation: shake 0.4s ease-in-out;
 }
