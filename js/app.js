@@ -20,32 +20,103 @@ class Utils {
     }
 }
 
+function getCurrentLine() {
+    let e = new Error();
+    e = e.stack.split("\n")[2].split(":");
+    e.pop();
+    return e.pop();
+}
+class Item{
+    item;
+    addButton;
+    saveButton;
+    input;
+    textField;
+    btnGroup;
+    delButton;
+    doneButton;
+    editButton;
+    count;
+
+    
+    constructor(text = "", isSlashed = false){
+        const nm = new NodeManager();
+        this.item       = nm.construirElemento("li",{ "id": "item-" + this.count }, "",{})
+        this.input      = nm.construirElemento("input", { "id": "inp-" + this.count, "type": "text", "placeholder": "Write your task" }, "",{});
+        this.doneButton = nm.construirElemento("button", { "type": "button", "id": "done-" + this.count }, "Done");
+        this.btnGroup   = nm.construirElemento("div", { "id": "btnGrp" }, "",{});
+        this.delButton  = nm.construirElemento("button", { "id": "del-" + this.count, "type": "button" }, "X",{});
+        this.textField  = nm.construirElemento("p", { "id": "task-" + this.count }, text,{});
+        this.editButton = nm.construirElemento("button", { "id": "edit-" + this.count, "type": "button" }, "Edit",{});
+
+        if (isSlashed) this.item.classList.add("slashed");
+        this.initializeItemEvents(this.count)
+    }
+    initializeItemEvents(count){
+        this.addTitleClickEvent(count)
+    }
+    addTitleClickEvent(count) {
+        this.textField.addEventListener("click", (event) => {
+            if (event.target.matches("#task-" + count)) {
+                this.textField.parentElement.classList.toggle("slashed");
+            }
+        });
+    }
+
+    switchDisplay(doneEditing = true){
+        if(doneEditing){
+            title.textContent = textInput.value; // Move text from input to title
+            title.style.display = "flex"; // Show the title (task)
+            textInput.style.display = "none"; // Hide the input field
+            btnGrp.style.display = "flex"; // Show the button group again
+            btnDone.style.display = "none"; // Hide the Done button
+            console.log("line: "+getCurrentLine(),"doneEditing: "+doneEditing);
+        }else{
+            textInput.value = title.textContent; // Move text from input to title
+            title.style.display = "none"; // Show the title (task)
+            textInput.style.display = "flex"; // Hide the input field
+            btnGrp.style.display = "none"; // Show the button group again
+            btnDone.style.display = "flex"; // Hide the Done button
+            console.log("line: "+getCurrentLine(),"doneEditing: "+doneEditing);
+        }
+    }
+}
 /**
  * Manager Class that manages general Node creations
  */
 class NodeManager {
     /**
-     * 
      * @param {HTMLElement} tipoDeElemento type of element to be created.
      * @param {JSON} atributo JSON notation of attributes set on given element.
      * @param {string} texto Inner text if needed and available.
+     * @param {function} events JSON notation of any kind of event type and function, like the first two params of a "addEventListener"
+     * 
      * @returns {HTMLElement} returns filled HTMLElement.
      */
-    construirElemento(tipoDeElemento = '', atributo = {}, texto = '') {
-        let elemento = document.createElement(`${tipoDeElemento}`);
+    construirElemento(tipoDeElemento = '', atributo = {}, texto = '', events = {}) {
+        let elemento = document.createElement(tipoDeElemento);
         this.setearAttributos(elemento, atributo);
         elemento.innerText = texto;
-        return elemento;
+        this.setearEventos(elemento,events);
+        
+        return elemento; 
     }
-
     /**
-     * 
      * @param {HTMLElement} el HTMLElement to be created.
      * @param {JSON} attrs JSON Notation of attributes to give to the element.
      */
     setearAttributos(el, attrs) {
         for (var key in attrs) {
             el.setAttribute(key, attrs[key]);
+        }
+    }
+    /**
+     * @param {HTMLElement} el HTMLElement to be created.
+     * @param {JSON} events JSON Notation for events to give to the element.
+     */
+    setearEventos(el, events) {
+        for (var key in events) {
+            el.addEventListener(key,events[key]);
         }
     }
 }
