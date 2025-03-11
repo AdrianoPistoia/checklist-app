@@ -1,256 +1,261 @@
-/**
- * Utility Class
- */
 class Utils {
-    /**
-     * checks whether the app is running as an app or inside a web browser.
-     * @returns {boolean} whether it is a browser or an Electron app
-     */
     isElectron() {
-        return typeof process !== 'undefined' && process.versions != null && process.versions.electron != null;
+        return typeof process !== 'undefined' && process.versions?.electron != null;
     }
 
-    /**
-     * Sets the background color of the body to black
-     */
     setBodyBlack() {
-        if (!this.isElectron()) {
-            document.body.style.backgroundColor = "black";
-        }
+        if (!this.isElectron()) document.body.style.backgroundColor = "black";
     }
 }
 
-/**
- * Manager Class that manages general Node creations
- */
 class NodeManager {
-    /**
-     * 
-     * @param {HTMLElement} tipoDeElemento type of element to be created.
-     * @param {JSON} atributo JSON notation of attributes set on given element.
-     * @param {string} texto Inner text if needed and available.
-     * @returns {HTMLElement} returns filled HTMLElement.
-     */
+    constructor() {
+        this.construirElemento = this.construirElemento.bind(this);
+        this.setearAttributos = this.setearAttributos.bind(this);
+    }
+
     construirElemento(tipoDeElemento = '', atributo = {}, texto = '') {
-        let elemento = document.createElement(`${tipoDeElemento}`);
+        let elemento = document.createElement(tipoDeElemento);
         this.setearAttributos(elemento, atributo);
         elemento.innerText = texto;
         return elemento;
     }
 
-    /**
-     * 
-     * @param {HTMLElement} el HTMLElement to be created.
-     * @param {JSON} attrs JSON Notation of attributes to give to the element.
-     */
     setearAttributos(el, attrs) {
-        for (var key in attrs) {
-            el.setAttribute(key, attrs[key]);
+        for (const [key, value] of Object.entries(attrs)) {
+            if (value != null && value !== "") {
+                el.setAttribute(key, value.toString());
+            }
         }
     }
 }
 
-window.onload = function () {
+
+class ChecklistManager {
+    constructor(tabId, addButtonId, saveButtonId) {
+        this.tab = document.getElementById(tabId);
+        this.addButton = document.getElementById(addButtonId);
+        this.saveButton = document.getElementById(saveButtonId);
+        this.nodeManager = new NodeManager();
+        this.count = 0;
+        this.initializeEventListeners();
+    }
+
+    initializeEventListeners() {
+        this.addButton.addEventListener("click", () => this.handleAddButtonClick());
+        this.saveButton.addEventListener("click", () => this.saveChecklist());
+        this.initializeDragAndDrop();
+        this.initializeMouseHover();
+    }
+
+    handleAddButtonClick() {
+        const activeInput = document.querySelector("input[type='text']:not([style*='display: none'])");
+        !activeInput ? this.addTaskItem() : this.shakeElement(activeInput.closest("li"));
+    }
+
+    addTaskItem(taskText = "", isSlashed = false) {
+        this.count++;
+        const li = this.createTaskElement(taskText, isSlashed);
+        this.tab.querySelector("ul").appendChild(li);
+        this.focusOnInput();
+    }
+
+    createTaskElement(taskText, isSlashed) {
+        const { construirElemento } = this.nodeManager;
+        const id = this.count;
+        const li = construirElemento("li", { id: `item-${id}` });
+        if (isSlashed) li.classList.add("slashed");
+
+        const textInput = construirElemento("input", {
+            id:                 `inp-${id}`,
+            type:               "text",
+            placeholder:        "Write your task",
+        });
+        const title         = construirElemento("p", { id: `task-${id}` }, taskText);
+        const doneButton    = this.createButton(`done-${id}`, "Done", () => this.saveTask(textInput, title, doneButton));
+        const editButton    = this.createButton(`edit-${id}`, "Edit", () => this.editTask(title, textInput, doneButton));
+        const deleteButton  = this.createButton(`del-${id}`, "X", () => this.deleteTask(li));
+        const buttonGroup   = construirElemento("div", { class: "btn-group" });
+        buttonGroup.append(editButton, deleteButton);
+        li.append(textInput, title, doneButton, buttonGroup);
+        this.toggleTaskView(textInput, title, doneButton.nextSibling, doneButton, true);
+
+        li.addEventListener("click", (event) => {
+            if (!event.target.matches("button, input")) { // Ignore clicks on buttons and inputs
+                li.classList.toggle("slashed");
+            }
+        });
+
+        textInput.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                this.saveTask(textInput, title, doneButton)
+            }
+        });
+
+        return li;
+    }
+
+    saveTask(input, title, doneButton) {
+        title.textContent = input.value;
+        this.toggleTaskView(input, title, doneButton.nextSibling, doneButton ,false);
+    }
+
+    editTask(input, title, doneButton) {
+        input.value = title.textContent;
+        this.toggleTaskView(input, title, doneButton.nextSibling, doneButton, true);
+    }
+
+    focusOnInput(){
+        const input = document.getElementById("inp-"+this.count);
+        input.focus();
+    }
+
+    deleteTask(taskElement) {
+        taskElement.remove();
+    }
+
+    /**
+     * 
+     * @param {HTMLElement} element 
+     * @param {*} bool 
+     */
+    setDisplay(element, bool) {
+        if (!element.style) {
+            console.log("style: "+element.style+"\nNo hay estilo");
+            // element.setAttribute("style=display:"+(bool ? "flex" : "none"));
+            element.classList.toggle("display");
+        }else{
+            console.log("style: "+element.style.display+"\nHay estilo");
+            element.style.display = bool ? "flex" : "none";
+        }
+    }
+    
+
+    /**
+     * 
+     * @param {HTMLElement} input 
+     * @param {HTMLElement} title 
+     * @param {HTMLElement} buttonGroup 
+     * @param {HTMLElement} doneButton 
+     * @param {boolean} isEditing 
+     */
+    toggleTaskView(input, title, buttonGroup, doneButton, isEditing = false) {
+        this.setDisplay(input,isEditing);
+        this.setDisplay(title,!isEditing);
+        this.setDisplay(buttonGroup,!isEditing);
+        this.setDisplay(doneButton,isEditing);
+        console.log("is Editing: "+isEditing);
+        // input.style.display             = isEditing     ? "flex"   : "none";
+        // title.style.display             = !isEditing    ? "flex"   : "none";
+        // buttonGroup.style.display       = !isEditing    ? "flex"   : "none";
+        // doneButton.style.display        = isEditing     ? "flex"   : "none";
+        
+    }
+
+    createButton(id, text, onClick) {
+        const button = this.nodeManager.construirElemento("button", { id, type: "button" }, text);
+        button.addEventListener("click", onClick);
+        return button;
+    }
+
+    shakeElement(element) {
+        element.classList.add("shake");
+        setTimeout(() => element.classList.remove("shake"), 400);
+    }
+
+    saveChecklist() {
+        const items = Array.from(this.tab.querySelectorAll("li")).map(li => ({
+            title: li.querySelector("p").textContent,
+            isSlashed: li.classList.contains("slashed"),
+        }));
+
+        const data              = JSON.stringify(items);
+        const downloadAnchor    = document.createElement("a");
+        downloadAnchor.href     = `data:text/json;charset=utf-8,${encodeURIComponent(data)}`;
+        downloadAnchor.download = "checklist.json";
+        downloadAnchor.click();
+    }
+
+    loadChecklist(items) {
+        this.tab.querySelector("ul").innerHTML = "";
+        items.forEach(({ title, isSlashed }) => {
+            let i = 0; 
+            this.addTaskItem(title, isSlashed);
+            let lastTask = document.getElementsByTagName("li");
+            this.toggleTaskView(lastTask[i].closest("input"),lastTask[0].closest("p"),lastTask[0].closest(".buttonGroup"),lastTask[0].closest(".doneButton"),false);
+            i++;
+        });
+    }
+
+    initializeDragAndDrop() {
+        // document.addEventListener("dragover", e => e.preventDefault()); // Global dragover to prevent default
+        document.addEventListener("dragover", e => {
+            e.preventDefault();
+            // if (this.isDragging) {
+            //     this.isDragging = true; // Set dragging flag
+            //     this.tab.classList.add("slide");
+            //     console.log("is dragging over")
+            // }
+            this.tab.classList.remove("pre-slide");
+            this.tab.classList.add("slide");
+            console.log("is dragging over")
+        });
+    
+        // this.tab.addEventListener("dragleave", e => {
+        //     if (this.isDragging) {
+        //         this.isDragging = false; // Reset dragging flag
+        //         this.tab.classList.remove("drag-active");
+        //     }
+        // });
+    
+        this.tab.addEventListener("drop", e => {
+            e.preventDefault();
+            // this.tab.classList.remove("drag-active");
+            this.isDragging = false;
+    
+            const file = e.dataTransfer.files[0];
+            if (file?.type === "application/json") {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    try {
+                        const items = JSON.parse(reader.result);
+                        this.loadChecklist(items);
+                    } catch (error) {
+                        console.error("Invalid JSON file:", error);
+                    }
+                };
+                reader.readAsText(file);
+            } else {
+                console.error("Only JSON files are supported.");
+            }
+        });
+    }
+    
+    initializeMouseHover() {
+        document.addEventListener("mousemove", e => {
+            if (this.isDragging) return; // Skip hover logic if dragging
+            const rect = this.tab.getBoundingClientRect();
+            const isNearTab = e.clientX > rect.left - 100 && e.clientX < rect.left;
+            this.tab.classList.toggle("pre-slide", isNearTab);
+        });
+    
+        this.tab.addEventListener("mouseover", () => {
+            if (this.isDragging) return; // Skip mouseover logic if dragging
+            this.tab.classList.remove("pre-slide");
+            this.tab.classList.add("slide");
+        });
+    
+        this.tab.addEventListener("mouseleave", () => {
+            if (this.isDragging) return; // Skip mouseleave logic if dragging
+            this.tab.classList.remove("slide");
+        });
+    }
+}
+
+// Initialize the application
+window.onload = () => {
     const util = new Utils();
     util.setBodyBlack();
-    const nm = new NodeManager();
 
-    let tab = document.getElementById("tab");
-    let count = 0;
-    let addButton = document.getElementById("add-button");
-    let saveButton = document.getElementById("save-button");
-
-    /**
-     * Adds the slashed effect to a given title on click.
-     * count parameter determines part of the ID of the previous element
-     * @param {HTMLElement} title 
-     * @param {number} count 
-     */
-    function addTitleClickEvent(title, count) {
-        title.addEventListener("click", (event) => {
-            if (event.target.matches("#task-" + count)) {
-                title.parentElement.classList.toggle("slashed");
-            }
-        });
-    }
-
-    /**
-     * Adds a task item to the checklist.
-     * @param {string} taskText Optional text to initialize the task title.
-     * @param {boolean} isSlashed Optional flag to set the slashed class.
-     */
-    function addTaskItem(taskText = "", isSlashed = false) {
-        count++;
-        let lItem = nm.construirElemento("li", { "id": "item-" + count }, "");
-        if (isSlashed) lItem.classList.add("slashed");
-
-        // Create the text input field for adding a task
-        let textInput = nm.construirElemento("input", { "id": "inp-" + count, "type": "text", "placeholder": "Write your task" }, "");
-        textInput.style.display = taskText =="" ? "flex" : "none"; // Make input visible
-
-        // Create the Done button to save the task
-        let btnDone = nm.construirElemento("button", { "type": "button", "id": "done-" + count }, "Done");
-
-        // Create the button group for the task (edit and delete buttons)
-        let btnGrp = nm.construirElemento("div", { "id": "btnGrp" }, "");
-        let delBtn = nm.construirElemento("button", { "id": "del-" + count, "type": "button" }, "X");
-        let title = nm.construirElemento("p", { id: "task-" + count }, taskText);  // Use taskText here
-        title.style.display = taskText == ""? "none" : "flex"; // Hide the title initially
-
-        // Create the edit button and initialize it
-        let editBtn = nm.construirElemento("button", { "id": "edit-" + count, "type": "button" }, "Edit");
-
-        // Add title click event for slashing
-        addTitleClickEvent(title, count);
-
-        // Add functionality for the "Done" button (saving the task)
-        btnDone.addEventListener("click", () => {
-            title.textContent = textInput.value; // Move text from input to title
-            title.style.display = "flex"; // Show the title (task)
-            textInput.style.display = "none"; // Hide the input field
-            btnDone.style.display = "none"; // Hide the Done button
-            btnGrp.style.display = "flex"; // Show the button group again
-
-            // Add the title (p element) to the list and remove the input field
-            lItem.appendChild(title);
-            lItem.appendChild(btnGrp);
-        });
-
-        // Add delete functionality
-        delBtn.addEventListener("click", () => {
-            if(isSlashed || lItem.classList.contains("slashed")) return;
-            lItem.remove();
-        });
-
-        if(taskText != "") {
-            lItem.appendChild(title);
-            btnDone.style.display = "none";
-            btnGrp.style.display = "flex";
-            editBtn.style.display = "flex";
-            delBtn.style.display = "flex";
-        }else{
-            btnGrp.style.display = "none"; 
-
-        }
-        // Add the task title initially (empty)
-        lItem.appendChild(textInput); // Add input field
-        lItem.appendChild(btnDone); // Add Done button
-        btnGrp.appendChild(editBtn); // Ensure edit button is added
-        btnGrp.appendChild(delBtn);  // Add delete button
-        lItem.appendChild(btnGrp);
-
-        // Initially hide the button group when the input is visible
-
-        // Append the task to the checklist
-        document.querySelector("#tab>ul").appendChild(lItem);
-
-        // Add edit functionality after the task is saved
-        editBtn.addEventListener("click", () => {
-            if(isSlashed || lItem.classList.contains("slashed")) return;
-            textInput.value = title.textContent; // Set current text to input
-            textInput.style.display = "inline-block"; // Show input field
-            title.style.display = "none"; // Hide task title
-            btnGrp.style.display = "none"; // Hide the button group while editing
-
-            // Hide the Done button (edit mode active)
-            btnDone.style.display = "inline-block";
-
-            // Save the edited task when the "Done" button is clicked
-            btnDone.addEventListener("click", () => {
-                title.textContent = textInput.value; // Update task text
-                title.style.display = "flex"; // Show updated task title
-                textInput.style.display = "none"; // Hide input field
-                btnDone.style.display = "none"; // Hide Done button
-                btnGrp.style.display = "flex"; // Show button group again
-            });
-        });
-        textInput.focus();
-    }
-
-    /**
-     * Loads the checklist from the given JSON data.
-     * @param {Array} items An array of task objects.
-     */
-    function loadChecklist(items) {
-        // Clear previous tasks before loading new ones
-        document.querySelector("#tab>ul").innerHTML = '';
-
-        // Load new tasks
-        items.forEach(item => {
-            addTaskItem(item.title, item.isSlashed);
-            
-        });
-    }
-
-    // Add task button
-    addButton.addEventListener("click", () => {
-        // Check if there is any input field still visible
-        const activeInput = document.querySelector("input[type='text']:not([style*='display: none'])");
-        if (!activeInput) {
-            addTaskItem(); // Add an empty task only if no input field is visible
-        } else {
-            // Find the first li element with the active input
-            const activeLi = document.querySelector("li:has(input[type='text']:not([style*='display: none']))");
-            if (activeLi) {
-                // Apply shake effect
-                activeLi.classList.add("shake");
-                // Remove the shake class after the animation ends
-                setTimeout(() => {
-                    activeLi.classList.remove("shake");
-                }, 400);
-            }
-        }
-    });
-
-    // Save checklist as JSON
-    saveButton.addEventListener("click", () => {
-        const items = [];
-        document.querySelectorAll("#tab>ul>li").forEach((li) => {
-            const title = li.querySelector("p").textContent;
-            const isSlashed = li.classList.contains("slashed");
-            items.push({ title, isSlashed });
-        });
-
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(items));
-        const downloadAnchor = document.createElement("a");
-        downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", "checklist.json");
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        downloadAnchor.remove();
-    });
-
-    // Drag-and-drop functionality
-    document.addEventListener("dragover", (event) => {
-        event.preventDefault();
-        tab.classList.add("slide");
-    });
-
-    tab.addEventListener("drop", (event) => {
-        event.preventDefault();
-        const file = event.dataTransfer.files[0];
-        if (file && file.type === "application/json") {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                const items = JSON.parse(e.target.result);
-                loadChecklist(items);  // Load the tasks and remove previous ones
-            };
-            reader.readAsText(file);
-        }
-    });
-
-    document.addEventListener("mousemove", (e) => {
-        if (e.clientX > tab.getBoundingClientRect().left - 100 && e.clientX < tab.getBoundingClientRect().left) {
-            tab.classList.add("pre-slide");
-        } else {
-            tab.classList.remove("pre-slide");
-        }
-    });
-    tab.addEventListener("mouseover", () => {
-        tab.classList.remove("pre-slide");
-        tab.classList.add("slide");
-    });
-    tab.addEventListener("mouseleave", () => {
-        tab.classList.remove("slide");
-    });
+    new ChecklistManager("tab", "add-button", "save-button");
 };

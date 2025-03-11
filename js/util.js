@@ -4,7 +4,12 @@ function insertAfter(referenceNode, newNode) {
 let intPropertyValue = (target, property) => {
 	return parseInt(window.getComputedStyle(target).getPropertyValue(property));
 }
-
+let rawPropertyValue = (target, property) => {
+	return window.getComputedStyle(target).getPropertyValue(property);
+}
+let log = (item) => {
+	console.log(item);
+}
 tab.style.transform = "translateX("+(window.innerWidth-(tab.com))+"px)"
 
 function addPositions(arr, arr2) {
