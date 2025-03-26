@@ -2,6 +2,9 @@
 :root{
 	--checkList-height: 			80vh;
 }
+html{
+	/* background-color: 				black; */
+}
 *{
 	font-family: 					Verdana, Geneva, Tahoma, sans-serif;
 }
@@ -61,33 +64,14 @@ li[id^=item-]{
 	display: 						flex;
 	position: 						relative;
 	font-size: 						medium;
-	margin-top: 					2px;
 	text-align: 					left;
 	align-items: 					center;
-	padding-left: 					15px;
 	font-weight: 					bold;
-	margin-bottom: 					2px;
 	border-bottom: 					1px solid #616161;
 	justify-content: 				space-between;
 
 	overflow: 						visible;
     transition: 					background-color 0.3s ease;
-}
-li[id^="item-"]:hover{
-	background-color: 				#313131;
-} 
-
-li[id^="item-"]:hover .btn-group{
-	/* display: 						flex !important; */
-	opacity: 1;
-}
-li[id^="item-"]:hover [id^="del-"]{
-	/* display: 						flex !important; */
-	opacity: 1;
-}
-li[id^="item-"]:hover [id^="edit-"]{
-	/* display: 						flex !important; */
-	opacity: 1;
 }
 li::after {
     top: 							50%;
@@ -99,7 +83,7 @@ li::after {
     position: 						absolute;
     background: 					rgb(146, 0, 0);
     transition: 					width 0.2s ease;
-    pointer-events: 				none;
+    /* pointer-events: 				none; */
 }
 li.slashed::after {
     width: 							110%;
@@ -120,12 +104,9 @@ h2 {
 #btnGrp{
 	height: 						100%;
 	display: 						flex;
-	opacity: 						0;
 	max-width: 						100%;
 	min-width: 						auto;
 	justify-content: 				flex-end;
-	/* display: 						none; */
-
 }
 [id^="inp-"]{
 	width: 							100% !important;
@@ -137,31 +118,28 @@ button[id^="donEdit-"] {
 	width: 							30px;
     border: 						none;
     cursor: 						pointer;
-	padding: 						5px 10px;
-	display: 						flex;
+	padding: 						5px 0px;
+	display:						flex;
 	text-wrap: 						nowrap;
 	font-size: 						large;
 	text-align: 					center;
 	align-items: 					center;
 	font-weight: 					bold;
 	justify-content: 				center;
-
 }
-
 button[id^="done-"] {
     color: 							black;
     cursor: 						pointer;
 	height: 						100%;
-	display: 						flex;
 	text-wrap: 						nowrap;
 	font-size: 						medium;
 	text-align: 					center;
 	align-items: 					center;
 	font-weight: 					bold;
 	justify-content: 				center;
-    background-color: 				rgb(49, 173, 0);
-	border-top-left-radius: 		3px;
-	/* border-bottom-left-radius: 		5px; */
+    background-color: 				rgb(76, 216, 21);
+	border-top-left-radius: 		5px;
+	border-bottom-left-radius: 		5px;
 }
 button[id^="del-"] {
     color: 							black;
@@ -169,22 +147,12 @@ button[id^="del-"] {
 	height: 						100%;
     border: 						none;
     cursor: 						pointer;
-	opacity: 						0;
 	font-size: 						large;
 	text-align: 					center;
 	align-items: 					center;
 	font-weight: 					bold;
 	justify-self: 					flex-end;
-	justify-content: 				center;
     background-color: 				rgb(189, 22, 22);
-	border-top-right-radius: 		3px;
-    transition: 					opacity 0.3s ease;
-
-	/* border-bottom-right-radius: 	5px; */
-}
-button[id^="del-"]:hover{
-	background-color: 				rgb(155, 0, 0);
-
 }
 button[id^="edit-"] {
     color: 							black;
@@ -192,7 +160,6 @@ button[id^="edit-"] {
     border: 						none;
 	height: 						100%;
     cursor: 						pointer;
-	opacity: 						0;
 	font-size: 						large;
 	text-align: 					center;
 	align-items: 					center;
@@ -200,13 +167,7 @@ button[id^="edit-"] {
 	justify-self: 					flex-end;
     background-color: 				rgb(207, 187, 2);
     border-top-left-radius: 		3px;
-
-    transition: 					opacity 0.3s ease;
-
-}
-button[id^="edit-"]:hover{
-    background-color: 				rgb(133, 119, 1);
-
+    border-bottom-left-radius:		3px;
 }
 #add-button{
 	color: 							black;
@@ -220,19 +181,6 @@ button[id^="edit-"]:hover{
 	border-top-right-radius: 		3px;
     border-bottom-right-radius:		3px;
 }
-/* [id^=""]{
+[id^=""]{
 	visibility: 					hidden;
-} */
-
-@keyframes shake {
-    0% 		{ transform: translateX(0) 		skewX(0);		}
-    20% 	{ transform: translateX(-5px) 	skewX(5deg) 	}
-    40% 	{ transform: translateX(5px) 	skewX(-5deg);	}
-    60% 	{ transform: translateX(-5px) 	skewX(5deg); 	}
-    80% 	{ transform: translateX(5px) 	skewX(-5deg);	}
-    100% 	{ transform: translateX(-5px) 	skewX(5deg); 	}
-}
-
-.shake {
-    animation: shake 0.4s ease-in-out;
 }

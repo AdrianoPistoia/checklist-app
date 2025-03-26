@@ -1,261 +1,198 @@
+/**
+ * TODO
+ * Refactor, isolate and deepen the scope of NodeManager
+ * cuando se presiona un edit, precargar el nombre de la task para la edicion
+ * cuando la task esta slashed, botones desactivados excepto el de borrar
+ * 
+ * css refactor and specialization
+ */
 class Utils {
     isElectron() {
-        return typeof process !== 'undefined' && process.versions?.electron != null;
+        return typeof process !== 'undefined' && process.versions != null && process.versions.electron != null;
     }
-
     setBodyBlack() {
-        if (!this.isElectron()) document.body.style.backgroundColor = "black";
+        if (!this.isElectron()) {
+            document.body.style.backgroundColor = "black";
+        }
     }
 }
 
 class NodeManager {
-    constructor() {
-        this.construirElemento = this.construirElemento.bind(this);
-        this.setearAttributos = this.setearAttributos.bind(this);
-    }
-
     construirElemento(tipoDeElemento = '', atributo = {}, texto = '') {
-        let elemento = document.createElement(tipoDeElemento);
+        let elemento = document.createElement(`${tipoDeElemento}`);
         this.setearAttributos(elemento, atributo);
         elemento.innerText = texto;
         return elemento;
     }
 
     setearAttributos(el, attrs) {
-        for (const [key, value] of Object.entries(attrs)) {
-            if (value != null && value !== "") {
-                el.setAttribute(key, value.toString());
-            }
+        for (var key in attrs) {
+            el.setAttribute(key, attrs[key]);
         }
     }
 }
 
+window.onload = function () {
+    let util = new Utils();
+    // util.setBodyBlack();
 
-class ChecklistManager {
-    constructor(tabId, addButtonId, saveButtonId) {
-        this.tab = document.getElementById(tabId);
-        this.addButton = document.getElementById(addButtonId);
-        this.saveButton = document.getElementById(saveButtonId);
-        this.nodeManager = new NodeManager();
-        this.count = 0;
-        this.initializeEventListeners();
-    }
+    const nm = new NodeManager();
+    let tab = document.getElementById("tab");
+    let count = 0;
+    let addButton = document.getElementById("add-button");
+    let addBtnPressed = false;
 
-    initializeEventListeners() {
-        this.addButton.addEventListener("click", () => this.handleAddButtonClick());
-        this.saveButton.addEventListener("click", () => this.saveChecklist());
-        this.initializeDragAndDrop();
-        this.initializeMouseHover();
-    }
-
-    handleAddButtonClick() {
-        const activeInput = document.querySelector("input[type='text']:not([style*='display: none'])");
-        !activeInput ? this.addTaskItem() : this.shakeElement(activeInput.closest("li"));
-    }
-
-    addTaskItem(taskText = "", isSlashed = false) {
-        this.count++;
-        const li = this.createTaskElement(taskText, isSlashed);
-        this.tab.querySelector("ul").appendChild(li);
-        this.focusOnInput();
-    }
-
-    createTaskElement(taskText, isSlashed) {
-        const { construirElemento } = this.nodeManager;
-        const id = this.count;
-        const li = construirElemento("li", { id: `item-${id}` });
-        if (isSlashed) li.classList.add("slashed");
-
-        const textInput = construirElemento("input", {
-            id:                 `inp-${id}`,
-            type:               "text",
-            placeholder:        "Write your task",
-        });
-        const title         = construirElemento("p", { id: `task-${id}` }, taskText);
-        const doneButton    = this.createButton(`done-${id}`, "Done", () => this.saveTask(textInput, title, doneButton));
-        const editButton    = this.createButton(`edit-${id}`, "Edit", () => this.editTask(title, textInput, doneButton));
-        const deleteButton  = this.createButton(`del-${id}`, "X", () => this.deleteTask(li));
-        const buttonGroup   = construirElemento("div", { class: "btn-group" });
-        buttonGroup.append(editButton, deleteButton);
-        li.append(textInput, title, doneButton, buttonGroup);
-        this.toggleTaskView(textInput, title, doneButton.nextSibling, doneButton, true);
-
-        li.addEventListener("click", (event) => {
-            if (!event.target.matches("button, input")) { // Ignore clicks on buttons and inputs
-                li.classList.toggle("slashed");
-            }
-        });
-
-        textInput.addEventListener("keydown", (event) => {
-            if (event.key === "Enter") {
-                this.saveTask(textInput, title, doneButton)
-            }
-        });
-
-        return li;
-    }
-
-    saveTask(input, title, doneButton) {
-        title.textContent = input.value;
-        this.toggleTaskView(input, title, doneButton.nextSibling, doneButton ,false);
-    }
-
-    editTask(input, title, doneButton) {
-        input.value = title.textContent;
-        this.toggleTaskView(input, title, doneButton.nextSibling, doneButton, true);
-    }
-
-    focusOnInput(){
-        const input = document.getElementById("inp-"+this.count);
-        input.focus();
-    }
-
-    deleteTask(taskElement) {
-        taskElement.remove();
-    }
-
-    /**
-     * 
-     * @param {HTMLElement} element 
-     * @param {*} bool 
-     */
-    setDisplay(element, bool) {
-        if (!element.style) {
-            console.log("style: "+element.style+"\nNo hay estilo");
-            // element.setAttribute("style=display:"+(bool ? "flex" : "none"));
-            element.classList.toggle("display");
-        }else{
-            console.log("style: "+element.style.display+"\nHay estilo");
-            element.style.display = bool ? "flex" : "none";
-        }
-    }
     
+    function addTitleClickEvent(title, count) {
+        title.addEventListener("click", (event) => {
+            if (event.target.matches("#task-" + count)) {
+                title.parentElement.classList.toggle("slashed");
+            }
+        });
+    }
 
-    /**
-     * 
-     * @param {HTMLElement} input 
-     * @param {HTMLElement} title 
-     * @param {HTMLElement} buttonGroup 
-     * @param {HTMLElement} doneButton 
-     * @param {boolean} isEditing 
-     */
-    toggleTaskView(input, title, buttonGroup, doneButton, isEditing = false) {
-        this.setDisplay(input,isEditing);
-        this.setDisplay(title,!isEditing);
-        this.setDisplay(buttonGroup,!isEditing);
-        this.setDisplay(doneButton,isEditing);
-        console.log("is Editing: "+isEditing);
-        // input.style.display             = isEditing     ? "flex"   : "none";
-        // title.style.display             = !isEditing    ? "flex"   : "none";
-        // buttonGroup.style.display       = !isEditing    ? "flex"   : "none";
-        // doneButton.style.display        = isEditing     ? "flex"   : "none";
+    addButton.addEventListener("click", () => {
+        if (addBtnPressed) {
+            return;
+        }
+        count++;
+        addBtnPressed = true;
+
         
-    }
+        let lItem       = nm.construirElemento("li", { "id": "item-" + count }, "");
+        let textInput   = nm.construirElemento("input", { "id": "inp-" + count, "type": "text", "placeholder": "Write your task" }, "");
+        let btnDone     = nm.construirElemento("button", { "type": "button", "id": "done-" + count }, "Set Task");
+        let btnGrp      = nm.construirElemento("div", { "id": "btnGrp" }, "");
+        let delBtn      = nm.construirElemento("button", { "id": "del-" + count, "type": "button" }, "X");
+        let title       = nm.construirElemento("p", { id: "task-" + count }, textInput.value);
+        let editBtn     = nm.construirElemento("button", { "id": "edit-" + count, "type": "button" }, "Edit");
+        let doneEditBtn = nm.construirElemento("button", { "id": "donEdit-" + count, "class": "btn btn-primary col-1" }, "");
+        doneEditBtn.innerHTML = `<svg width="30px" height="30px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 14.5C5 14.5 6.5 14.5 8.5 18C8.5 18 14.0588 8.83333 19 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>`;
 
-    createButton(id, text, onClick) {
-        const button = this.nodeManager.construirElemento("button", { id, type: "button" }, text);
-        button.addEventListener("click", onClick);
-        return button;
-    }
+        
+        addTitleClickEvent(title, count);
 
-    shakeElement(element) {
-        element.classList.add("shake");
-        setTimeout(() => element.classList.remove("shake"), 400);
-    }
+        btnDone.addEventListener("click", () => {
+            addBtnPressed = false;
 
-    saveChecklist() {
-        const items = Array.from(this.tab.querySelectorAll("li")).map(li => ({
-            title: li.querySelector("p").textContent,
-            isSlashed: li.classList.contains("slashed"),
-        }));
+            delBtn.addEventListener("click", () => {
+                lItem.remove();
+            });
 
-        const data              = JSON.stringify(items);
-        const downloadAnchor    = document.createElement("a");
-        downloadAnchor.href     = `data:text/json;charset=utf-8,${encodeURIComponent(data)}`;
-        downloadAnchor.download = "checklist.json";
-        downloadAnchor.click();
-    }
+            editBtn.addEventListener("click", () => {
+                textInput.value = title.textContent;
+                textInput.style.display = "flex";
+                title.style.display = "none";
+                btnGrp.insertBefore(doneEditBtn, editBtn);
+                editBtn.style.display = "none";
 
-    loadChecklist(items) {
-        this.tab.querySelector("ul").innerHTML = "";
-        items.forEach(({ title, isSlashed }) => {
-            let i = 0; 
-            this.addTaskItem(title, isSlashed);
-            let lastTask = document.getElementsByTagName("li");
-            this.toggleTaskView(lastTask[i].closest("input"),lastTask[0].closest("p"),lastTask[0].closest(".buttonGroup"),lastTask[0].closest(".doneButton"),false);
-            i++;
-        });
-    }
+                doneEditBtn.addEventListener("click", () => {
+                    editBtn.style.display = "flex";
+                    textInput.style.display = "none";
+                    title.textContent = textInput.value;
+                    title.style.display = "flex";
+                    doneEditBtn.remove();
+                });
+            });
 
-    initializeDragAndDrop() {
-        // document.addEventListener("dragover", e => e.preventDefault()); // Global dragover to prevent default
-        document.addEventListener("dragover", e => {
-            e.preventDefault();
-            // if (this.isDragging) {
-            //     this.isDragging = true; // Set dragging flag
-            //     this.tab.classList.add("slide");
-            //     console.log("is dragging over")
-            // }
-            this.tab.classList.remove("pre-slide");
-            this.tab.classList.add("slide");
-            console.log("is dragging over")
+            lItem.appendChild(textInput);
+            title.textContent = textInput.value;
+            lItem.appendChild(title);
+            btnGrp.appendChild(editBtn);
+            btnGrp.appendChild(delBtn);
+            lItem.appendChild(btnGrp);
+            textInput.style.display = "none";
+            title.style.display = "flex";
+            btnDone.remove();
         });
-    
-        // this.tab.addEventListener("dragleave", e => {
-        //     if (this.isDragging) {
-        //         this.isDragging = false; // Reset dragging flag
-        //         this.tab.classList.remove("drag-active");
-        //     }
-        // });
-    
-        this.tab.addEventListener("drop", e => {
-            e.preventDefault();
-            // this.tab.classList.remove("drag-active");
-            this.isDragging = false;
-    
-            const file = e.dataTransfer.files[0];
-            if (file?.type === "application/json") {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    try {
-                        const items = JSON.parse(reader.result);
-                        this.loadChecklist(items);
-                    } catch (error) {
-                        console.error("Invalid JSON file:", error);
-                    }
-                };
-                reader.readAsText(file);
-            } else {
-                console.error("Only JSON files are supported.");
-            }
-        });
-    }
-    
-    initializeMouseHover() {
-        document.addEventListener("mousemove", e => {
-            if (this.isDragging) return; // Skip hover logic if dragging
-            const rect = this.tab.getBoundingClientRect();
-            const isNearTab = e.clientX > rect.left - 100 && e.clientX < rect.left;
-            this.tab.classList.toggle("pre-slide", isNearTab);
-        });
-    
-        this.tab.addEventListener("mouseover", () => {
-            if (this.isDragging) return; // Skip mouseover logic if dragging
-            this.tab.classList.remove("pre-slide");
-            this.tab.classList.add("slide");
-        });
-    
-        this.tab.addEventListener("mouseleave", () => {
-            if (this.isDragging) return; // Skip mouseleave logic if dragging
-            this.tab.classList.remove("slide");
-        });
-    }
+
+        document.querySelector("#tab>ul").appendChild(lItem);
+        lItem.appendChild(textInput);
+        lItem.appendChild(btnDone);
+    });
+
+    document.addEventListener("mousemove", (e) => {
+        if (e.clientX > tab.getBoundingClientRect().left - 100 && e.clientX < tab.getBoundingClientRect().left) {
+            tab.classList.add("pre-slide");
+        } else {
+            tab.classList.remove("pre-slide");
+        }
+    });
+    tab.addEventListener("mouseover", () => {
+        tab.classList.remove("pre-slide");
+        tab.classList.add("slide");
+    });
+    tab.addEventListener("mouseleave", () => {
+        tab.classList.remove("slide");
+    });
+};
+function saveChecklist() {
+    const taskElements = document.querySelectorAll("#page > li");
+    const tasks = Array.from(taskElements).map(li => {
+        return {
+            text: li.querySelector("p").textContent,
+            slashed: li.classList.contains("slashed")
+        };
+    });
+    window.electronAPI.saveTodos(tasks);
 }
 
-// Initialize the application
-window.onload = () => {
-    const util = new Utils();
-    util.setBodyBlack();
+window.electronAPI.onSaveResult((event, result) => {
+    if (result.success) {
+        alert("Tareas guardadas correctamente.");
+    } else {
+        alert("Error al guardar las tareas: " + result.error);
+    }
+});
 
-    new ChecklistManager("tab", "add-button", "save-button");
-};
+window.electronAPI.onLoadResult((event, result) => {
+    if (result.success) {
+        document.querySelector("#page").innerHTML = "";
+        result.todos.forEach((task, index) => {
+            count = index + 1;
+            let lItem = nm.construirElemento("li", { "id": "item-" + count }, "");
+            let title = nm.construirElemento("p", { id: "task-" + count }, task.text);
+            let btnGrp = nm.construirElemento("div", { "id": "btnGrp" }, "");
+            let delBtn = nm.construirElemento("button", { "id": "del-" + count, "type": "button" }, "X");
+            let editBtn = nm.construirElemento("button", { "id": "edit-" + count, "type": "button" }, "Edit");
+            let doneEditBtn = nm.construirElemento("button", { "id": "donEdit-" + count, "class": "btn btn-primary col-1" }, "");
+            doneEditBtn.innerHTML = `<svg width="30px" height="30px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 14.5C5 14.5 6.5 14.5 8.5 18C8.5 18 14.0588 8.83333 19 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>`;
+
+            addTitleClickEvent(title, count);
+
+            delBtn.addEventListener("click", () => {
+                lItem.remove();
+            });
+
+            editBtn.addEventListener("click", () => {
+                let textInput = nm.construirElemento("input", { "id": "inp-" + count, "type": "text", "placeholder": "Write your task" }, "");
+                textInput.value = title.textContent;
+                textInput.style.display = "flex";
+                title.style.display = "none";
+                btnGrp.insertBefore(doneEditBtn, editBtn);
+                editBtn.style.display = "none";
+
+                doneEditBtn.addEventListener("click", () => {
+                    editBtn.style.display = "flex";
+                    textInput.style.display = "none";
+                    title.textContent = textInput.value;
+                    title.style.display = "flex";
+                    doneEditBtn.remove();
+                });
+                lItem.appendChild(textInput);
+            });
+            lItem.appendChild(title);
+            btnGrp.appendChild(editBtn);
+            btnGrp.appendChild(delBtn);
+            lItem.appendChild(btnGrp);
+            document.querySelector("#page").appendChild(lItem);
+
+            if (task.slashed) {
+                lItem.classList.add("slashed");
+            }
+
+        });
+    } else {
+        alert("Error al cargar las tareas: " + result.error);
+    }
+});
